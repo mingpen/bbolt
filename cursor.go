@@ -105,7 +105,7 @@ func (c *Cursor) Prev() (key []byte, value []byte) {
 	c.last()
 	k, v, flags := c.keyValue()
 	if (flags & uint32(bucketLeafFlag)) != 0 {
-		return k, nil
+		return k, v
 	}
 	return k, v
 }

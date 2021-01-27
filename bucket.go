@@ -118,6 +118,51 @@ func (b *Bucket) Bucket(name []byte) *Bucket {
 	return child
 }
 
+// SeekBucket ...
+func (c *Cursor) SeekBucket(name []byte) (*Bucket, []byte) {
+	k, v, _ := c.seek(name)
+
+	if k == nil || v == nil {
+		return nil, nil
+	}
+
+	// Otherwise create a bucket and cache it.
+	var child = c.bucket.openBucket(v)
+	if c.bucket.buckets != nil {
+		c.bucket.buckets[string(name)] = child
+	}
+
+	return child, k
+}
+
+// PrevBucket ...
+func (c *Cursor) PrevBucket() (*Bucket, []byte) {
+	k, v := c.Prev()
+	if k != nil && v != nil {
+		var child = c.bucket.openBucket(v)
+		if c.bucket.buckets != nil {
+			c.bucket.buckets[string(k)] = child
+		}
+		return child, k
+	}
+
+	return nil, nil
+}
+
+// NextBucket ...
+func (c *Cursor) NextBucket() (*Bucket, []byte) {
+	k, v, _ := c.next()
+	if k != nil && v != nil {
+		var child = c.bucket.openBucket(v)
+		if c.bucket.buckets != nil {
+			c.bucket.buckets[string(k)] = child
+		}
+		return child, k
+	}
+
+	return nil, nil
+}
+
 // Helper method that re-interprets a sub-bucket value
 // from a parent into a Bucket
 func (b *Bucket) openBucket(value []byte) *Bucket {
